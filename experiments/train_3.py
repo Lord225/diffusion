@@ -1,6 +1,5 @@
 import os
 import sys
-import keras
 import tensorflow as tf
 import tensorboard as tb
 
@@ -8,7 +7,7 @@ import numpy as np
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import diffusion as df
-from keras.datasets import mnist # type: ignore
+from keras.datasets import mnist
 import datetime
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
@@ -36,9 +35,9 @@ input_dim = 64
 
 alphas_cumprod, betas, alphas = df.calculate_variance(T)
 
-model = df.build_model_3(T, embedding_size, input_dim) # type: keras.Model
+model = df.build_model_3(T, embedding_size, input_dim)
 
-model.compile(loss=keras.losses.Huber(), optimizer="nadam")
+model.compile(loss=tf.keras.losses.Huber(), optimizer="nadam")
 
 model.summary()
 
@@ -63,13 +62,13 @@ train_dataset = train_dataset.map(lambda data: df.add_gauss_noise_to_image_conte
 #     print(X, y)
     
 #checkpoit
-checkpoint_cb = keras.callbacks.ModelCheckpoint(
+checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
     os.path.join(MODEL_DIR, 'model-image_net-{epoch}.h5'),
     save_weights_only=True,
 )
 
 # tb
-tensorboard_cb = keras.callbacks.TensorBoard(
+tensorboard_cb = tf.keras.callbacks.TensorBoard(
     log_dir=os.path.join(os.path.dirname(__file__), '..', 'logs', RUN_NAME),
     histogram_freq=1,
     write_images=True,
@@ -78,7 +77,7 @@ tensorboard_cb = keras.callbacks.TensorBoard(
     embeddings_freq=1,
 )
 # learning_rate_scheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=5)
-lr_sheduler = keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=20, monitor='loss')
+lr_sheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=20, monitor='loss')
 
 model.fit(train_dataset, epochs=1000, callbacks=[tensorboard_cb, lr_sheduler, checkpoint_cb])
 
