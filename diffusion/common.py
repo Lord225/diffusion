@@ -1,4 +1,3 @@
-from typing import Any
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -54,7 +53,7 @@ def add_gauss_noise_to_image(
     alpha_cumprod: tf.Tensor,
     T: int,
 ):
-    X_shape = tf.shape(imgs) # type: Any
+    X_shape = tf.shape(imgs)
     t = tf.random.uniform([X_shape[0]], minval=1, maxval=T, dtype=tf.int32)
     alpha_cm = tf.gather(alpha_cumprod, t)
     alpha_cm = tf.reshape(alpha_cm, [X_shape[0]] + [1] * (len(X_shape) - 1))
@@ -65,20 +64,19 @@ def add_gauss_noise_to_image(
     }, noise
 
 
-@tf.function
+#@tf.function
 def add_gauss_noise_to_image_context(
     imgs,
     context,
     alpha_cumprod: tf.Tensor,
     T: int,
-    N: int,
 ):
-    X_shape = tf.shape(imgs) # type: Any
+    X_shape = tf.shape(imgs)
     t = tf.random.uniform([X_shape[0]], minval=1, maxval=T, dtype=tf.int32)
     alpha_cm = tf.gather(alpha_cumprod, t)
     alpha_cm = tf.reshape(alpha_cm, [X_shape[0]] + [1] * (len(X_shape) - 1))
     noise = tf.random.normal(X_shape)
-    context = tf.one_hot(context, N)
+    context = tf.one_hot(context, 200)
     return {
         "X_Noisy": alpha_cm ** 0.5 * imgs + (1 - alpha_cm) ** 0.5 * noise,
         "t_Input": t,

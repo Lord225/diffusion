@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import keras
 import tensorflow as tf
 import diffusion as df
 
@@ -13,7 +12,7 @@ embedding_size = 128
 input_dim = 32
 model = df.build_model(T, embedding_size, input_dim)
 model.load_weights('models/model-24.h5')
-model.compile(loss=keras.losses.Huber(), optimizer="nadam")
+model.compile(loss=tf.keras.losses.Huber(), optimizer="nadam")
 print('Model loaded')
 
 

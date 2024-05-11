@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import keras
 import tensorflow as tf
 import diffusion as df
+
+
 
 print('Loading model')
 T = 1000
@@ -11,8 +12,10 @@ embedding_size = 128
 input_dim = 64
 model = df.build_model_2(T, embedding_size, input_dim)
 model.load_weights(f'models/model-2-66.h5')
-model.compile(loss=keras.losses.Huber(), optimizer="nadam")
+model.compile(loss=tf.keras.losses.Huber(), optimizer="nadam")
 print('Model loaded')
+
+
 
 
 print('Generating image')

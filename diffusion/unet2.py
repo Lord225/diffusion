@@ -1,4 +1,4 @@
-import keras
+from matplotlib import axis
 import tensorflow as tf
 import os
 import sys
@@ -13,68 +13,67 @@ def build_unet_2(X, embed):
 
     cross.append(X)
 
-    X = keras.layers.SeparableConv2D(32, 3, padding='same', activation='elu')(X) # 32x32
-    X = keras.layers.BatchNormalization()(X)
+    X = tf.keras.layers.SeparableConv2D(32, 3, padding='same', activation='elu')(X) # 32x32
+    X = tf.keras.layers.BatchNormalization()(X)
     
-    # tile using [1, X.shape[1], X.shape[2]
-    embed_tiled = keras.layers.Lambda(lambda x: tf.tile(x, [1, X.shape[1], X.shape[2], 1]))(embed)
-    X = keras.layers.Concatenate()([X, embed_tiled])
+    embed_tiled = tf.tile(embed, [1, X.shape[1], X.shape[2], 1]) #type: ignore
+    X = tf.keras.layers.Concatenate()([X, embed_tiled])
     
-    X = keras.layers.SeparableConv2D(32, 3, padding='same', activation='elu')(X) # 32x32
-    X = keras.layers.BatchNormalization()(X)
+    X = tf.keras.layers.SeparableConv2D(32, 3, padding='same', activation='elu')(X) # 32x32
+    X = tf.keras.layers.BatchNormalization()(X)
 
-    X = keras.layers.MaxPooling2D()(X) # 16x16
+    X = tf.keras.layers.MaxPooling2D()(X) # 16x16
     
     cross.append(X) # 16x16
 
-    X = keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 16x16
-    X = keras.layers.BatchNormalization()(X)
+    X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 16x16
+    X = tf.keras.layers.BatchNormalization()(X)
     
-    embed_tiled = keras.layers.Lambda(lambda x: tf.tile(x, [1, X.shape[1], X.shape[2], 1]))(embed)
-    X = keras.layers.Concatenate()([X, embed_tiled])
+    embed_tiled = tf.tile(embed, [1, X.shape[1], X.shape[2], 1]) #type: ignore
+    X = tf.keras.layers.Concatenate()([X, embed_tiled])
 
 
-    X = keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 16x16
-    X = keras.layers.BatchNormalization()(X)
+    X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 16x16
+    X = tf.keras.layers.BatchNormalization()(X)
 
-    X = keras.layers.MaxPooling2D()(X) # 8x8
+    X = tf.keras.layers.MaxPooling2D()(X) # 8x8
  
     cross.append(X) # 8x8
 
-    X = keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 8x8
-    X = keras.layers.BatchNormalization()(X)
+    X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 8x8
+    X = tf.keras.layers.BatchNormalization()(X)
 
-    embed_tiled = keras.layers.Lambda(lambda x: tf.tile(x, [1, X.shape[1], X.shape[2], 1]))(embed)
-    X = keras.layers.Concatenate()([X, embed_tiled])
+    embed_tiled = tf.tile(embed, [1, X.shape[1], X.shape[2], 1]) #type: ignore
+    X = tf.keras.layers.Concatenate()([X, embed_tiled])
 
-    X = keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 8x8
-    X = keras.layers.BatchNormalization()(X)
+    X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 8x8
+    X = tf.keras.layers.BatchNormalization()(X)
     
-    X = keras.layers.MaxPooling2D()(X) # 4x4
+    X = tf.keras.layers.MaxPooling2D()(X) # 4x4
 
     # decoder
-    X = keras.layers.Conv2DTranspose(64, 3, strides=2, padding='same', activation='elu')(X) # 8x8
-    X = keras.layers.BatchNormalization()(X)
+    X = tf.keras.layers.Conv2DTranspose(64, 3, strides=2, padding='same', activation='elu')(X) # 8x8
+    X = tf.keras.layers.BatchNormalization()(X)
 
 
-    embed_tiled = keras.layers.Lambda(lambda x: tf.tile(x, [1, X.shape[1], X.shape[2], 1]))(embed)
-    X = keras.layers.Concatenate()([X, cross.pop(), embed_tiled]) # 8x8
+    embed_tiled = tf.tile(embed, [1, X.shape[1], X.shape[2], 1]) #type: ignore
+    X = tf.keras.layers.Concatenate()([X, cross.pop(), embed_tiled]) # 8x8
 
-    X = keras.layers.Conv2DTranspose(32, 3, strides=2, padding='same', activation='elu')(X) # 16x16
-    X = keras.layers.BatchNormalization()(X)
+    X = tf.keras.layers.Conv2DTranspose(32, 3, strides=2, padding='same', activation='elu')(X) # 16x16
+    X = tf.keras.layers.BatchNormalization()(X)
     
-    embed_tiled = keras.layers.Lambda(lambda x: tf.tile(x, [1, X.shape[1], X.shape[2], 1]))(embed)
-    X = keras.layers.Concatenate()([X, cross.pop(), embed_tiled]) # 16x16
+    embed_tiled = tf.tile(embed, [1, X.shape[1], X.shape[2], 1]) #type: ignore
+    X = tf.keras.layers.Concatenate()([X, cross.pop(), embed_tiled]) # 16x16
 
-    X = keras.layers.Conv2DTranspose(16, 3, strides=2, padding='same', activation='elu')(X) # 32x32
-    X = keras.layers.BatchNormalization()(X)
+    X = tf.keras.layers.Conv2DTranspose(16, 3, strides=2, padding='same', activation='elu')(X) # 32x32
+    X = tf.keras.layers.BatchNormalization()(X)
 
-    embed_tiled = keras.layers.Lambda(lambda x: tf.tile(x, [1, X.shape[1], X.shape[2], 1]))(embed)
-    X = keras.layers.Concatenate()([X, cross.pop(), embed_tiled]) # 32x32
+    embed_tiled = tf.tile(embed, [1, X.shape[1], X.shape[2], 1]) #type: ignore
+    X = tf.keras.layers.Concatenate()([X, cross.pop(), embed_tiled]) # 32x32
 
-    X = keras.layers.Conv2D(1, 3, padding='same')(X) # 32x32
+    X = tf.keras.layers.Conv2D(1, 3, padding='same')(X) # 32x32
 
-    X = keras.layers.Cropping2D(cropping=(2, 2))(X) # 28x28
+    X = tf.keras.layers.Cropping2D(cropping=(2, 2))(X) # 28x28
 
     return X
 
@@ -83,29 +82,29 @@ def build_model_2(
     T_embedding: int,
     dim: int,
 ):
-    X_Noisy = keras.layers.Input(shape=(28, 28, 1), name='X_Noisy')
+    X_Noisy = tf.keras.layers.Input(shape=(28, 28, 1), name='X_Noisy')
     # input embedding layer
-    t_Input = keras.layers.Input(shape=[], name='t_Input', dtype=tf.int32)
+    t_Input = tf.keras.layers.Input(shape=[], name='t_Input', dtype=tf.int32)
 
-    c_Input = keras.layers.Input(shape=[10], name='c_Input', dtype=tf.float32)
+    c_Input = tf.keras.layers.Input(shape=[10], name='c_Input', dtype=tf.float32)
 
     pos_encoding = tf.constant(tf.reshape(positional_encoding(T, T_embedding), (T, T_embedding)), dtype=tf.float32)
 
     # pad to 32x32
-    X = keras.layers.ZeroPadding2D(padding=(2, 2))(X_Noisy)
-    X = keras.layers.Conv2D(dim, 3, padding='same', activation='elu')(X)
+    X = tf.keras.layers.ZeroPadding2D(padding=(2, 2))(X_Noisy)
+    X = tf.keras.layers.Conv2D(dim, 3, padding='same', activation='elu')(X)
 
-    time = keras.layers.Lambda(lambda x: tf.gather(pos_encoding, x), output_shape=(T_embedding,))(t_Input)
-    encoded_time = keras.layers.Dense(dim)(time) # None, 1000, 64
-    encoded_cont = keras.layers.Dense(dim)(c_Input)
+    time = tf.gather(pos_encoding, t_Input)
+    encoded_time = tf.keras.layers.Dense(dim)(time) # None, 1000, 64
+    encoded_cont = tf.keras.layers.Dense(dim)(c_Input)
 
-    X = encoded_time[:, tf.newaxis, tf.newaxis] + X
+    X = encoded_time[:, tf.newaxis, tf.newaxis] + X #type: ignore
 
-    embed = encoded_cont[:, tf.newaxis, tf.newaxis]
+    embed = encoded_cont[:, tf.newaxis, tf.newaxis] #type: ignore
 
     X = build_unet_2(X, embed)
 
-    return keras.Model(inputs=[X_Noisy, t_Input, c_Input], outputs=X, name='UNet')
+    return tf.keras.Model(inputs=[X_Noisy, t_Input, c_Input], outputs=X, name='UNet')
 
 
 
