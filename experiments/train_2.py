@@ -28,7 +28,7 @@ input_dim = 64
 
 alphas_cumprod, betas, alphas = df.calculate_variance(T)
 
-model = df.build_model_2(T, embedding_size, input_dim)
+model = df.build_model_2(T, embedding_size, input_dim) # type: keras.Model
 
 model.compile(loss=keras.losses.Huber(), optimizer="nadam")
 
@@ -42,7 +42,7 @@ train_dataset = train_dataset.map(lambda x, y: df.add_gauss_noise_to_image_conte
 # build test dataset
 x_test = tf.data.Dataset.from_tensor_slices((x_test, y_test))
 x_test = x_test.batch(batch_size).prefetch(2)
-x_test = x_test.map(lambda x,y: df.add_gauss_noise_to_image_context(x, y, alphas_cumprod, T))
+x_test = x_test.map(lambda x,y: df.add_gauss_noise_to_image_context(x, y, alphas_cumprod, T, 10))
 
 # get one batch
 x, y = next(iter(train_dataset)) # type: ignore
