@@ -53,7 +53,7 @@ def preprocess_image(image):
 train_dataset = tiny_imagenet
 train_dataset = train_dataset.batch(batch_size).prefetch(2)
 train_dataset = train_dataset.map(lambda data: {'image': preprocess_image(data['image']), 'label': data['label']})
-train_dataset = train_dataset.map(lambda data: df.add_gauss_noise_to_image_context(data['image'], data['label'], alphas_cumprod, T))
+train_dataset = train_dataset.map(lambda data: df.add_gauss_noise_to_image_context(data['image'], data['label'], alphas_cumprod, T, 200))
 
 # get first 25 baches, check dimensions
 # for i, (X, y) in enumerate(train_dataset):
@@ -62,8 +62,8 @@ train_dataset = train_dataset.map(lambda data: df.add_gauss_noise_to_image_conte
 #     print(X, y)
     
 #checkpoit
-checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
-    os.path.join(MODEL_DIR, 'model-image_net-{epoch}.h5'),
+checkpoint_cb = keras.callbacks.ModelCheckpoint(
+    os.path.join(MODEL_DIR, 'model-image_net-{epoch}.weights.h5'),
     save_weights_only=True,
 )
 
