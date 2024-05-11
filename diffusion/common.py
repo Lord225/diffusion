@@ -186,3 +186,12 @@ def positional_encoding(position, d_model):
   pos_encoding = angle_rads[np.newaxis, ...]
 
   return tf.cast(pos_encoding, dtype=tf.float32)
+
+
+class TileEmbedding(tf.keras.layers.Layer):
+    def __init__(self, **kwargs):
+        super(TileEmbedding, self).__init__(**kwargs)
+
+    def call(self, inputs):
+        X, embed = inputs
+        return tf.tile(embed, [1, tf.shape(X)[1], tf.shape(X)[2], 1])

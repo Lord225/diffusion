@@ -62,7 +62,7 @@ train_dataset = train_dataset.map(lambda data: df.add_gauss_noise_to_image_conte
 #     print(X, y)
     
 #checkpoit
-checkpoint_cb = keras.callbacks.ModelCheckpoint(
+checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
     os.path.join(MODEL_DIR, 'model-image_net-{epoch}.weights.h5'),
     save_weights_only=True,
 )
