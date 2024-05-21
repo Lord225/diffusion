@@ -25,7 +25,7 @@ batch_size = 32
 embedding_size = 128
 input_dim = 64
 model = df.build_model_2(T, embedding_size, input_dim)
-model.load_weights(f'models/{args.model}')
+model.load_weights(args.model)
 model.compile(loss=tf.keras.losses.Huber(), optimizer="nadam")
 print('Model loaded')
 
@@ -72,6 +72,8 @@ else:
     for i in range(8):
         ax[i // 4, i % 4].imshow(generated[i, :, :, 0], cmap='gray')
         ax[i // 4, i % 4].axis('off')
+    # save img
+    plt.savefig(f'temp/{args.c}.png')
 
     plt.show()
 

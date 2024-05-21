@@ -37,7 +37,7 @@ model.summary()
 # build dataset
 train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
 train_dataset = train_dataset.shuffle(1024).batch(batch_size).prefetch(2)
-train_dataset = train_dataset.map(lambda x, y: df.add_gauss_noise_to_image_context(x, y, alphas_cumprod, T))
+train_dataset = train_dataset.map(lambda x, y: df.add_gauss_noise_to_image_context(x, y, alphas_cumprod, T, 10))
 
 # build test dataset
 x_test = tf.data.Dataset.from_tensor_slices((x_test, y_test))
@@ -51,7 +51,7 @@ x, y = next(iter(train_dataset))
 
 #checkpoit
 checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
-    os.path.join(MODEL_DIR, 'model-2-{epoch}.h5'),
+    os.path.join(MODEL_DIR, 'model-2-{epoch}.weights.h5'),
     save_weights_only=True,
 )
 

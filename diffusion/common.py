@@ -23,7 +23,7 @@ def calculate_variance(
 
     betas = np.concatenate([np.array([1.0]), betas])
 
-    alphas = np.concatenate([np.array([1.0]), alphas])
+    alphas = np.concatenate([np.array([1.0]), alphas]) # todo 0
 
 
     return alphas_cumprod.astype('float32'), betas.astype('float32'), alphas.astype('float32')
@@ -64,19 +64,20 @@ def add_gauss_noise_to_image(
     }, noise
 
 
-#@tf.function
+@tf.function
 def add_gauss_noise_to_image_context(
     imgs,
     context,
     alpha_cumprod: tf.Tensor,
     T: int,
+    N: int,
 ):
     X_shape = tf.shape(imgs)
     t = tf.random.uniform([X_shape[0]], minval=1, maxval=T, dtype=tf.int32)
     alpha_cm = tf.gather(alpha_cumprod, t)
     alpha_cm = tf.reshape(alpha_cm, [X_shape[0]] + [1] * (len(X_shape) - 1))
     noise = tf.random.normal(X_shape)
-    context = tf.one_hot(context, 200)
+    context = tf.one_hot(context, N)
     return {
         "X_Noisy": alpha_cm ** 0.5 * imgs + (1 - alpha_cm) ** 0.5 * noise,
         "t_Input": t,
@@ -100,6 +101,7 @@ def sub_gauss_noise_from_image(
 
 from tqdm import tqdm
 
+@tf.function
 def generate(model, batch_size, T, alpha, beta, alpha_cumprod): 
     X = tf.random.normal([batch_size, 28, 28, 1])
 
@@ -113,6 +115,7 @@ def generate(model, batch_size, T, alpha, beta, alpha_cumprod):
         )
     return X
 
+# @tf.function
 def generate_context(model, batch_size, context, T, alpha, beta, alpha_cumprod): 
     X = tf.random.normal([batch_size, 28, 28, 1])
     context = tf.one_hot([context]*batch_size, 10)

@@ -12,9 +12,7 @@ import datetime
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
 
-
 RUN_NAME = "run_image_net" + datetime.datetime.now().strftime("%Y%m%d-%H%M")
-
 
 from datasets import load_dataset
 
@@ -22,7 +20,6 @@ tiny_imagenet = load_dataset('Maysee/tiny-imagenet', split='train')
 
 # remove images in grayscale
 tiny_imagenet = tiny_imagenet.filter(lambda x: x['image'].layers == 3)
-
 tiny_imagenet = tiny_imagenet.to_tf_dataset(
     columns=['image', 'label'],
 )

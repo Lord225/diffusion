@@ -16,7 +16,7 @@ def build_unet_3(X, embed):
     X = tf.keras.layers.SeparableConv2D(32, 3, padding='same', activation='elu')(X) # 32x32
     X = tf.keras.layers.BatchNormalization()(X)
     
-    embed_tiled = tf.keras.layers.Lambda(lambda x: tf.tile(x, [1, X.shape[1], X.shape[2], 1]))(embed)
+    embed_tiled = TileEmbedding()([X, embed])
     X = tf.keras.layers.Concatenate()([X, embed_tiled])
     
     X = tf.keras.layers.SeparableConv2D(64, 3, padding='same', activation='elu')(X) # 32x32
@@ -38,7 +38,7 @@ def build_unet_3(X, embed):
     X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 16x16
     X = tf.keras.layers.BatchNormalization()(X)
     
-    embed_tiled = tf.keras.layers.Lambda(lambda x: tf.tile(x, [1, X.shape[1], X.shape[2], 1]))(embed)
+    embed_tiled = TileEmbedding()([X, embed])
     X = tf.keras.layers.Concatenate()([X, embed_tiled])
 
     X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 16x16
