@@ -29,7 +29,7 @@ model.load_weights(args.model)
 model.compile(loss=tf.keras.losses.Huber(), optimizer="nadam")
 print('Model loaded')
 
-
+import cv2
 
 
 print('Generating image')
@@ -70,7 +70,11 @@ else:
     fig, ax = plt.subplots(2, 4, figsize=(20, 10))
 
     for i in range(8):
-        ax[i // 4, i % 4].imshow(generated[i, :, :, 0], cmap='gray')
+        img = generated[i, :, :, 0]
+        img = np.array(img)
+        img = (img - img.min()) / (img.max() - img.min())
+        (t, tresh_img) = cv2.threshold(img, 0.3, 1, cv2.THRESH_TOZERO)
+        ax[i // 4, i % 4].imshow(tresh_img, cmap='gray')
         ax[i // 4, i % 4].axis('off')
     # save img
     plt.savefig(f'temp/{args.c}.png')

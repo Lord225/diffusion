@@ -4,3 +4,5 @@ psando/
 temp/
 datasets/
 __pycache__/
+dataset/
+models-minst/

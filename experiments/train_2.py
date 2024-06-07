@@ -28,7 +28,7 @@ input_dim = 64
 
 alphas_cumprod, betas, alphas = df.calculate_variance(T)
 
-model = df.build_model_2(T, embedding_size, input_dim) # type: keras.Model
+model = df.build_model_2(T, embedding_size, input_dim) # type: tf.keras.Model
 
 model.compile(loss=tf.keras.losses.Huber(), optimizer="nadam")
 
@@ -59,13 +59,13 @@ checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
 tensorboard_cb = tf.keras.callbacks.TensorBoard(
     log_dir=os.path.join(os.path.dirname(__file__), '..', 'logs', RUN_NAME),
     histogram_freq=1,
-    write_images=True,
     update_freq=100, #type: ignore
     profile_batch=0,
     embeddings_freq=1,
 )
 # learning_rate_scheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=5)
-lr_sheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=5, monitor='loss')
+# lr_sheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=3, monitor='loss')
+lr_sheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 0.001 * 0.5 ** (epoch / 10))
 
 model.fit(train_dataset, epochs=100, validation_data=x_test, callbacks=[tensorboard_cb, lr_sheduler, checkpoint_cb])
 

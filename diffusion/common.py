@@ -21,7 +21,7 @@ def calculate_variance(
     betas = np.clip(betas, 0.0001, 0.999)
 
 
-    betas = np.concatenate([np.array([1.0]), betas])
+    betas = np.concatenate([np.array([0.0001]), betas])
 
     alphas = np.concatenate([np.array([1.0]), alphas]) # todo 0
 
