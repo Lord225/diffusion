@@ -16,16 +16,17 @@ def build_unet_3(X, embed):
     X = tf.keras.layers.SeparableConv2D(32, 3, padding='same', activation='elu')(X) # 32x32
     X = tf.keras.layers.BatchNormalization()(X)
     
+    # tile using [1, X.shape[1], X.shape[2]
     embed_tiled = TileEmbedding()([X, embed])
     X = tf.keras.layers.Concatenate()([X, embed_tiled])
     
-    X = tf.keras.layers.SeparableConv2D(64, 3, padding='same', activation='elu')(X) # 32x32
+    X = tf.keras.layers.SeparableConv2D(32, 3, padding='same', activation='elu')(X) # 32x32
     X = tf.keras.layers.BatchNormalization()(X)
 
-    X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 32x32
+    X = tf.keras.layers.SeparableConv2D(32, 3, padding='same', activation='elu')(X) # 32x32
     X = tf.keras.layers.BatchNormalization()(X)
     
-    X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 32x32
+    X = tf.keras.layers.SeparableConv2D(32, 3, padding='same', activation='elu')(X) # 32x32
     X = tf.keras.layers.BatchNormalization()(X)
 
     X = tf.keras.layers.MaxPooling2D()(X) # 16x16
@@ -34,19 +35,17 @@ def build_unet_3(X, embed):
 
     X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 16x16
     X = tf.keras.layers.BatchNormalization()(X)
-
+    
     X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 16x16
     X = tf.keras.layers.BatchNormalization()(X)
+    
     
     embed_tiled = TileEmbedding()([X, embed])
     X = tf.keras.layers.Concatenate()([X, embed_tiled])
 
-    X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 16x16
-    X = tf.keras.layers.BatchNormalization()(X)
 
     X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 16x16
     X = tf.keras.layers.BatchNormalization()(X)
-    
 
     X = tf.keras.layers.MaxPooling2D()(X) # 8x8
  
@@ -69,34 +68,25 @@ def build_unet_3(X, embed):
     # decoder
     X = tf.keras.layers.Conv2DTranspose(128, 3, strides=2, padding='same', activation='elu')(X) # 8x8
     X = tf.keras.layers.BatchNormalization()(X)
-    
+
     X = tf.keras.layers.SeparableConv2D(128, 3, padding='same', activation='elu')(X) # 8x8
     X = tf.keras.layers.BatchNormalization()(X)
-    
 
     embed_tiled = TileEmbedding()([X, embed])
     X = tf.keras.layers.Concatenate()([X, cross.pop(), embed_tiled]) # 8x8
 
-    X = tf.keras.layers.Conv2DTranspose(64, 3, strides=2, padding='same', activation='elu')(X) # 16x16
+    X = tf.keras.layers.Conv2DTranspose(128, 3, strides=2, padding='same', activation='elu')(X) # 16x16
     X = tf.keras.layers.BatchNormalization()(X)
-
-    X = tf.keras.layers.SeparableConv2D(64, 3, padding='same', activation='elu')(X) # 8x8
-    X = tf.keras.layers.BatchNormalization()(X)
-    
-    
     embed_tiled = TileEmbedding()([X, embed])
     X = tf.keras.layers.Concatenate()([X, cross.pop(), embed_tiled]) # 16x16
 
     X = tf.keras.layers.Conv2DTranspose(32, 3, strides=2, padding='same', activation='elu')(X) # 32x32
     X = tf.keras.layers.BatchNormalization()(X)
 
-    X = tf.keras.layers.SeparableConv2D(32, 3, padding='same', activation='elu')(X) # 8x8
-    X = tf.keras.layers.BatchNormalization()(X)
-
     embed_tiled = TileEmbedding()([X, embed])
     X = tf.keras.layers.Concatenate()([X, cross.pop(), embed_tiled]) # 32x32
 
-    X = tf.keras.layers.Conv2D(1, 3, padding='same')(X) # 32x32
+    X = tf.keras.layers.Conv2D(3, 3, padding='same')(X) # 32x32
 
     return X
 
@@ -113,10 +103,9 @@ def build_model_3(
 
     pos_encoding = tf.constant(tf.reshape(positional_encoding(T, T_embedding), (T, T_embedding)), dtype=tf.float32)
 
-    # pad to 32x32
     X = tf.keras.layers.Conv2D(dim, 3, padding='same', activation='elu')(X_Noisy)
 
-    time = tf.keras.layers.Lambda(lambda x: tf.gather(pos_encoding, x), output_shape=(T_embedding,))(t_Input)
+    time = tf.gather(pos_encoding, t_Input)
     encoded_time = tf.keras.layers.Dense(dim)(time) # None, 1000, 64
     encoded_cont = tf.keras.layers.Dense(dim)(c_Input)
 
@@ -127,8 +116,6 @@ def build_model_3(
     X = build_unet_3(X, embed)
 
     return tf.keras.Model(inputs=[X_Noisy, t_Input, c_Input], outputs=X, name='UNet')
-
-
 
 if __name__ == '__main__':
     model = build_model_3(1000, 64, 16)

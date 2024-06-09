@@ -24,11 +24,13 @@ tiny_imagenet = tiny_imagenet.to_tf_dataset(
     columns=['image', 'label'],
 )
 
+# get subset (first 10'000 images)
+tiny_imagenet = tiny_imagenet.take(20000)
 
 T = 1000
-batch_size = 32
+batch_size = 64
 embedding_size = 128
-input_dim = 64
+input_dim = 128
 
 alphas_cumprod, betas, alphas = df.calculate_variance(T)
 
@@ -38,29 +40,37 @@ model.compile(loss=tf.keras.losses.Huber(), optimizer="nadam")
 
 model.summary()
 
-@tf.function
+#@tf.function
 def preprocess_image(image):
     image = tf.image.resize(image, (64, 64))
-    if image.shape[-1] == 1:
-        image = tf.image.grayscale_to_rgb(image)    
-    image = tf.cast(image, tf.float32) / 255. #type: ignore
+    if image.shape[-1] != 3:
+        image = tf.image.grayscale_to_rgb(image)
+    # normalize
+    image = tf.cast(image, tf.float32)
+
+    image = image / 255.0 #type: ignore
+
     return image
 
 # build dataset
 train_dataset = tiny_imagenet
-train_dataset = train_dataset.batch(batch_size).prefetch(2)
+train_dataset = train_dataset.shuffle(5000).batch(batch_size).prefetch(2)
 train_dataset = train_dataset.map(lambda data: {'image': preprocess_image(data['image']), 'label': data['label']})
 train_dataset = train_dataset.map(lambda data: df.add_gauss_noise_to_image_context(data['image'], data['label'], alphas_cumprod, T, 200))
 
-# get first 25 baches, check dimensions
-# for i, (X, y) in enumerate(train_dataset):
+
+# import matplotlib.pyplot as plt
+# # get first 25 baches, check dimensions
+# for i, X in enumerate(train_dataset):
 #     if i > 25:
 #         break
-#     print(X, y)
+#     print(X)
+#     plt.imshow(X['image'][0, :, :, :])
+#     plt.show()
     
 #checkpoit
 checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
-    os.path.join(MODEL_DIR, 'model-image_net-{epoch}.weights.h5'),
+    os.path.join(MODEL_DIR, 'model-image_net-20000-{epoch}.weights.h5'),
     save_weights_only=True,
 )
 
@@ -74,9 +84,20 @@ tensorboard_cb = tf.keras.callbacks.TensorBoard(
     embeddings_freq=1,
 )
 # learning_rate_scheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=5)
-lr_sheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=20, monitor='loss')
+# lr_sheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=20, monitor='loss')
 
-model.fit(train_dataset, epochs=1000, callbacks=[tensorboard_cb, lr_sheduler, checkpoint_cb])
+lr_sheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 0.001 * 0.5 ** (epoch / 25))
+# def schedule_with_params(lr_init=0.001, lr_end=1.e-6, nb_epochs=100):
+#     import math
+#     def schedule(epoch):
+#         s = (math.log(lr_init) - math.log(lr_end))/math.log(10.)
+#         lr = lr_init * 10.**(-float(epoch)/float(max(nb_epochs-1,1)) * s)
+#         return lr
+#     return tf.keras.callbacks.LearningRateScheduler(schedule)
+
+# lr_sheduler = schedule_with_params(lr_init=0.001, lr_end=1.e-6, nb_epochs=80)
+
+model.fit(train_dataset, epochs=200, callbacks=[tensorboard_cb, lr_sheduler, checkpoint_cb])
 
 
 

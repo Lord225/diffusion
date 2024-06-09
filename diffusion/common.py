@@ -114,19 +114,39 @@ def generate(model, batch_size, T, alpha, beta, alpha_cumprod):
             + (1 - alpha[t]) ** 0.5 * noise
         )
     return X
+import matplotlib.pyplot as plt
 
 # @tf.function
-def generate_context(model, batch_size, context, T, alpha, beta, alpha_cumprod): 
-    X = tf.random.normal([batch_size, 28, 28, 1])
-    context = tf.one_hot([context]*batch_size, 10)
+def generate_context(model, 
+                     batch_size, 
+                     context, 
+                     T, 
+                     alpha, 
+                     beta, 
+                     alpha_cumprod,
+                     N=10,
+                     img_shape=(28, 28, 1)
+                     ): 
+    X = tf.random.normal([batch_size] + list(img_shape))
+    context = tf.one_hot([context]*batch_size, N)
     for t in tqdm(range(T - 1, 0, -1)):
         noise = (tf.random.normal if t > 1 else tf.zeros)(tf.shape(X))
         X_noise = model({"X_Noisy": X, "t_Input": tf.constant([t] * batch_size), "c_Input": context})
+        # normalize X_noise
         X = (
             1 / alpha[t] ** 0.5
             * (X - beta[t] / (1 - alpha_cumprod[t]) ** 0.5 * X_noise)
             + (1 - alpha[t]) ** 0.5 * noise
         )
+
+        #plot noise, X_noise, X
+        # if t%2 == 1:
+        #     ax, fig = plt.subplots(1, 3, figsize=(20, 10))
+        #     fig[0].imshow(noise[0, :, :, :])
+        #     fig[1].imshow(X_noise[0, :, :, :])
+        #     fig[2].imshow(X[0, :, :, :])
+
+        #     plt.show()
     return X
 
 def generate_context_raw(model, batch_size, context, T, alpha, beta, alpha_cumprod): 
