@@ -9,6 +9,16 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import diffusion as df
 from keras.datasets import mnist
 import datetime
+import argparse
+
+parser = argparse.ArgumentParser(description='Generate images using trained model')
+
+parser.add_argument('--resume', type=str, help='Path to model file')
+
+parser.add_argument('--epoch-start', type=int, help='Epoch to start from')
+
+args = parser.parse_args()
+
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
 
@@ -25,7 +35,7 @@ tiny_imagenet = tiny_imagenet.to_tf_dataset(
 )
 
 # get subset (first 10'000 images)
-tiny_imagenet = tiny_imagenet.take(20000)
+tiny_imagenet = tiny_imagenet.take(10000)
 
 T = 1000
 batch_size = 64
@@ -37,6 +47,10 @@ alphas_cumprod, betas, alphas = df.calculate_variance(T)
 model = df.build_model_3(T, embedding_size, input_dim)
 
 model.compile(loss=tf.keras.losses.Huber(), optimizer="nadam")
+
+if args.resume:
+    model.load_weights(args.resume)
+
 
 model.summary()
 
@@ -70,7 +84,7 @@ train_dataset = train_dataset.map(lambda data: df.add_gauss_noise_to_image_conte
     
 #checkpoit
 checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
-    os.path.join(MODEL_DIR, 'model-image_net-20000-{epoch}.weights.h5'),
+    os.path.join(MODEL_DIR, 'model-image_net-10000-big-{epoch}.weights.h5'),
     save_weights_only=True,
 )
 
@@ -86,7 +100,7 @@ tensorboard_cb = tf.keras.callbacks.TensorBoard(
 # learning_rate_scheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=5)
 # lr_sheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=20, monitor='loss')
 
-lr_sheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 0.001 * 0.5 ** (epoch / 25))
+lr_sheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 0.001 if epoch < 40 else 0.0001)
 # def schedule_with_params(lr_init=0.001, lr_end=1.e-6, nb_epochs=100):
 #     import math
 #     def schedule(epoch):
@@ -97,7 +111,7 @@ lr_sheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 0.001 * 0.5
 
 # lr_sheduler = schedule_with_params(lr_init=0.001, lr_end=1.e-6, nb_epochs=80)
 
-model.fit(train_dataset, epochs=200, callbacks=[tensorboard_cb, lr_sheduler, checkpoint_cb])
+model.fit(train_dataset, epochs=400, callbacks=[tensorboard_cb, lr_sheduler, checkpoint_cb], initial_epoch=args.epoch_start if args.epoch_start else 0)
 
 
 
