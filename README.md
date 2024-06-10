@@ -10,7 +10,7 @@ With this repo you will be able to train small scale diffusion models based on [
 ### Bigger scale/color images
 Even tho I work most of the time with minst dataset I tried to train in on bigger dataset. But this kind of training requires a bit more time and bigger model
 Samole images from `900k` param model (Subset of Imagenet dataset, 64x64px)
-![ImageNet](main/data/imagenet.png)
+![ImageNet](/data/imagenet.png)
 
 ### sampling 
 ![Anim of generating MINST digit](main/data/Animation.gif)
