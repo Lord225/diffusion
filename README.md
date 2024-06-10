@@ -25,7 +25,7 @@ I tried few heuristices
 * sum of squeres of entropy and abs error
 ### Example plot of entropy distribution for generated images
 ![error](data/entropy.png)
-Images can be generated with `generate_dataset.py` script and minst model trained with `experiments/train_minst_clasifier.py`. I can successfully train classifier using only generated data but it will always be a bit worst then one trained on original images.  
+Images can be generated with the generate_dataset.py script, and the MNIST model can be trained using experiments/train_mnist_classifier.py. I can successfully train the classifier using only generated data, but its performance is always slightly worse than one trained on original images. However, using a small amount of generated images along with the original data can improve classification performance compared to training with only the MNIST dataset.
 
 | Dataset for Classification                           | Accuracy (%)       |
 |------------------------------------------------------|--------------------|
