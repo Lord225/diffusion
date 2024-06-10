@@ -35,7 +35,7 @@ tiny_imagenet = tiny_imagenet.to_tf_dataset(
 )
 
 # get subset (first 10'000 images)
-tiny_imagenet = tiny_imagenet.take(10000)
+tiny_imagenet = tiny_imagenet.take(20000)
 
 T = 1000
 batch_size = 64
@@ -100,7 +100,7 @@ tensorboard_cb = tf.keras.callbacks.TensorBoard(
 # learning_rate_scheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=5)
 # lr_sheduler = tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=20, monitor='loss')
 
-lr_sheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 0.001 if epoch < 40 else 0.0001)
+lr_sheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 0.00001 if epoch < 100 else 0.0000001)
 # def schedule_with_params(lr_init=0.001, lr_end=1.e-6, nb_epochs=100):
 #     import math
 #     def schedule(epoch):
